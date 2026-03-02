@@ -55,3 +55,11 @@ function addTodo() {
   renderTodoList();
 }
 
+
+const setIntervalFonction = () => {
+  setTimeout(() => {
+    console.log("This message appears after 2 seconds");
+    setIntervalFonction();
+  }, 2000);
+}
+// setIntervalFonction();
