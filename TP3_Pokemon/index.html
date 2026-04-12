@@ -97,11 +97,11 @@
 
             // 3. Remplir les données
             player.name = pData.name.toUpperCase();
-            player.sprite = pData.sprites.front_default || pData.sprites.other["official-artwork"].front_default;
+            player.sprite = `https://play.pokemonshowdown.com/sprites/gen5/${pData.name}.png`;
             player.moves = await fetchMoves(pData.moves);
 
             enemy.name = eData.name.toUpperCase();
-            enemy.sprite = eData.sprites.front_default || eData.sprites.other["official-artwork"].front_default;
+            enemy.sprite = `https://play.pokemonshowdown.com/sprites/gen5/${eData.name}.png`;
             enemy.moves = await fetchMoves(eData.moves);
 
             // 4. Mettre à jour l'interface HTML
