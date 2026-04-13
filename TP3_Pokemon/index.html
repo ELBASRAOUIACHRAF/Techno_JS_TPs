@@ -12,6 +12,7 @@
         .hp-bar-container { width: 100%; background: #ccc; border-radius: 5px; margin-top: 10px; }
         .hp-bar { height: 20px; background: #4caf50; border-radius: 5px; width: 100%; transition: width 0.3s ease; }
         .moves-container { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .restart { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         button { padding: 10px 15px; border: none; background: #007bff; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; }
         button:hover { background: #0056b3; }
         button:disabled { background: #aaa; cursor: not-allowed; }
@@ -58,6 +59,10 @@
         <div id="moves" class="moves-container"></div>
 
         <div id="log"></div>
+
+        <div id="restart" style="display:none;">
+            <button onclick="restart()">Rejouer</button>
+        </div>
     </div>
 </div>
 
@@ -69,7 +74,7 @@
     let enemy = { hp: 300, maxHp: 300, name: "", sprite: "", moves: [] };
     let gameOver = false;
 
-    // Fonction pour écrire dans le journal de combat
+    // le journal de combat
     function writeLog(message) {
         const logDiv = document.getElementById("log");
         logDiv.innerHTML += `<p>> ${message}</p>`;
@@ -82,20 +87,18 @@
         if (!pNameInput) return alert("Veuillez entrer un nom de Pokémon !");
 
         document.getElementById("setup").style.display = "none";
+        document.getElementById("battle").style.display = "none";
         document.getElementById("loading").style.display = "block";
 
         try {
-            // 1. Récupérer le Pokémon du joueur
             const pRes = await fetch(API_URL + pNameInput);
             if (!pRes.ok) throw new Error("Pokémon introuvable");
             const pData = await pRes.json();
 
-            // 2. Récupérer un Pokémon ennemi aléatoire (entre 1 et 151)
             const randomId = Math.floor(Math.random() * 151) + 1;
             const eRes = await fetch(API_URL + randomId);
             const eData = await eRes.json();
 
-            // 3. Remplir les données
             player.name = pData.name.toUpperCase();
             player.sprite = `https://play.pokemonshowdown.com/sprites/gen5/${pData.name}.png`;
             player.moves = await fetchMoves(pData.moves);
@@ -104,7 +107,6 @@
             enemy.sprite = `https://play.pokemonshowdown.com/sprites/gen5/${eData.name}.png`;
             enemy.moves = await fetchMoves(eData.moves);
 
-            // 4. Mettre à jour l'interface HTML
             document.getElementById("playerName").innerText = player.name;
             document.getElementById("playerSprite").src = player.sprite;
             document.getElementById("enemyName").innerText = enemy.name;
@@ -147,7 +149,6 @@
         return validMoves;
     }
 
-    // Créer les boutons d'attaques pour le joueur
     function createMoveButtons() {
         const movesDiv = document.getElementById("moves");
         movesDiv.innerHTML = "";
@@ -160,12 +161,10 @@
         });
     }
 
-    // Exécuter un tour de combat
     function playTurn(playerMoveIndex) {
         if (gameOver) return;
 
         const pMove = player.moves[playerMoveIndex];
-        // L'ennemi choisit une attaque aléatoire
         const eMove = enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
 
         writeLog(`--- NOUVEAU TOUR ---`);
@@ -201,7 +200,7 @@
             }
             updateUI();
             checkWin();
-        }, 1000); // Petit délai pour lire le journal
+        }, 1000); 
     }
 
     // Mettre à jour les barres de vie
@@ -215,12 +214,10 @@
         document.getElementById("playerHpBar").style.width = (player.hp / player.maxHp) * 100 + "%";
         document.getElementById("enemyHpBar").style.width = (enemy.hp / enemy.maxHp) * 100 + "%";
         
-        // Changer la couleur de la barre de vie si basse
         if (player.hp <= 60) document.getElementById("playerHpBar").style.background = "red";
         if (enemy.hp <= 60) document.getElementById("enemyHpBar").style.background = "red";
     }
 
-    // Vérifier si quelqu'un a perdu
     function checkWin() {
         if (enemy.hp === 0) {
             writeLog(`<b>VICTOIRE ! ${enemy.name} est KO.</b>`);
@@ -235,11 +232,16 @@
         return false;
     }
 
-    // Fin du jeu
     function endGame() {
         gameOver = true;
+        document.getElementById("restart").style.display = "block";
         const buttons = document.querySelectorAll("#moves button");
         buttons.forEach(btn => btn.disabled = true);
+    }
+    function restart() {
+        if (confirm("Voulez-vous rejouer ?")) {
+            location.reload();
+        }
     }
 </script>
 
