@@ -1,0 +1,9 @@
+{
+ "name": "pokemon-game",
+ "bin": {
+  "pokemon": "pokemon.js"
+ },
+ "dependencies": {
+  "inquirer": "^13.4.1"
+ }
+}
