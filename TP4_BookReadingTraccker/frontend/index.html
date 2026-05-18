@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Tracker Élégant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-4xl font-bold text-indigo-900 tracking-tight">📚 My Library</h1>
+            <div class="flex gap-6">
+                <div class="bg-white px-6 py-3 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-xs text-slate-500 uppercase font-semibold">Livres Lus</p>
+                    <p class="text-2xl font-bold text-indigo-600" id="stat-books-read">0</p>
+                </div>
+                <div class="bg-white px-6 py-3 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-xs text-slate-500 uppercase font-semibold">Pages Lues</p>
+                    <p class="text-2xl font-bold text-indigo-600" id="stat-pages-read">0</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h2 class="text-xl font-bold mb-6 text-slate-700">Ajouter un livre</h2>
+                <form id="book-form" class="space-y-4">
+                    <input type="text" id="title" placeholder="Titre" class="w-full p-3 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none" required>
+                    <input type="text" id="author" placeholder="Auteur" class="w-full p-3 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none" required>
+                    <div class="flex gap-4">
+                        <input type="number" id="pages" placeholder="Nb Pages" class="w-1/2 p-3 bg-slate-50 border rounded-lg outline-none" required>
+                        <input type="number" id="pagesRead" placeholder="Pages Lues" class="w-1/2 p-3 bg-slate-50 border rounded-lg outline-none" value="0">
+                    </div>
+                    <input type="number" id="price" placeholder="Prix (€)" class="w-full p-3 bg-slate-50 border rounded-lg outline-none" required>
+                    
+                    <select id="status" class="w-full p-3 bg-slate-50 border rounded-lg outline-none">
+                        <option value="Want to read">Want to read</option>
+                        <option value="Currently reading">Currently reading</option>
+                        <option value="Read">Read</option>
+                        <option value="Re-read">Re-read</option>
+                        <option value="DNF">DNF</option>
+                        <option value="Returned Unread">Returned Unread</option>
+                    </select>
+
+                    <select id="format" class="w-full p-3 bg-slate-50 border rounded-lg outline-none">
+                        <option value="Print">Print</option>
+                        <option value="Ebook">Ebook</option>
+                        <option value="PDF">PDF</option>
+                        <option value="AudioBook">AudioBook</option>
+                    </select>
+                    
+                    <input type="text" id="suggestedBy" placeholder="Suggéré par" class="w-full p-3 bg-slate-50 border rounded-lg outline-none">
+                    
+                    <div id="validation-message" class="text-red-600 text-sm hidden"></div>
+                    
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">Enregistrer</button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6" id="books-container">
+                </div>
+        </div>
+    </div>
+
+    <div id="book-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm z-50">
+        <div class="bg-white p-8 rounded-2xl w-96 relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800">✖</button>
+            <h2 id="modal-title" class="text-2xl font-bold text-indigo-900 mb-2"></h2>
+            <p id="modal-author" class="text-slate-600 mb-6 font-medium"></p>
+            <div class="space-y-2 text-sm text-slate-700">
+                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                <p><strong>Format:</strong> <span id="modal-format"></span></p>
+                <p><strong>Prix:</strong> <span id="modal-price"></span> €</p>
+                <p><strong>Suggéré par:</strong> <span id="modal-suggested"></span></p>
+            </div>
+            <button id="modal-delete" class="mt-8 w-full bg-red-100 text-red-600 font-bold py-2 rounded-lg hover:bg-red-200 transition">Supprimer le livre</button>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm z-50">
+        <div class="bg-white p-8 rounded-2xl w-96 relative shadow-2xl">
+            <button onclick="closeEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800">✖</button>
+            <h2 class="text-2xl font-bold text-indigo-900 mb-4">Modifier les pages lues</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Pages lues</label>
+                    <input type="number" id="edit-pages-read" class="w-full p-3 bg-slate-50 border rounded-lg outline-none" min="0">
+                </div>
+                <div id="edit-error" class="text-red-600 text-sm hidden"></div>
+                <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition" onclick="savePages()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        async function fetchBooks() {
+            const res = await fetch(`${API_URL}/books`);
+            const books = await res.json();
+            
+            const statsRes = await fetch(`${API_URL}/stats`);
+            const stats = await statsRes.json();
+            
+            document.getElementById('stat-books-read').innerText = stats.totalRead;
+            document.getElementById('stat-pages-read').innerText = stats.totalPages;
+
+            renderBooks(books);
+        }
+
+        function renderBooks(books) {
+            const container = document.getElementById('books-container');
+            container.innerHTML = '';
+
+            books.forEach(book => {
+                const percentage = book.pages === 0 ? 0 : Math.round((book.pagesRead / book.pages) * 100);
+                const isFinished = book.finished ? 'checked disabled' : '';
+                
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer flex flex-col justify-between";
+                
+                // Si on clique sur la carte (mais pas sur le checkbox), ça ouvre la modal
+                card.onclick = (e) => {
+                    if(e.target.tagName !== 'INPUT') openModal(book);
+                };
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg text-slate-800 leading-tight">${book.title}</h3>
+                            <input type="checkbox" class="w-5 h-5 accent-indigo-600 cursor-pointer" 
+                                ${isFinished} 
+                                onchange="markAsFinished('${book._id}')" 
+                                title="Marquer comme lu">
+                        </div>
+                        <p class="text-sm text-slate-500 mb-4">${book.author}</p>
+                        
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 mb-1 overflow-hidden">
+                            <div class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-400">
+                            <span>${book.pagesRead} / ${book.pages} p.</span>
+                            <span>${percentage}%</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex gap-2 items-center justify-between">
+                        <span class="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-medium">
+                            ${book.status}
+                        </span>
+                        <button class="text-indigo-600 text-xs font-semibold hover:text-indigo-700" onclick="openEditModal('${book._id}', ${book.pages}, ${book.pagesRead})" title="Modifier les pages lues">✏️ Modifier</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById('book-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const validationMsg = document.getElementById('validation-message');
+            
+            const pages = Number(document.getElementById('pages').value) || 0;
+            const pagesRead = Number(document.getElementById('pagesRead').value) || 0;
+            
+            // Validation côté frontend
+            if (pagesRead > pages) {
+                validationMsg.textContent = '❌ Pages lues ne peuvent pas dépasser le nombre total de pages';
+                validationMsg.classList.remove('hidden');
+                return;
+            }
+            
+            validationMsg.classList.add('hidden');
+            
+            const newBook = {
+                title: document.getElementById('title').value.trim(),
+                author: document.getElementById('author').value.trim(),
+                pages: pages,
+                pagesRead: pagesRead,
+                price: Number(document.getElementById('price').value) || 0,
+                status: document.getElementById('status').value,
+                format: document.getElementById('format').value,
+                suggestedBy: document.getElementById('suggestedBy').value.trim(),
+            };
+            
+            try {
+                const res = await fetch(`${API_URL}/books`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newBook)
+                });
+                if (!res.ok) {
+                    const error = await res.json();
+                    validationMsg.textContent = '❌ ' + error.error;
+                    validationMsg.classList.remove('hidden');
+                    return;
+                }
+                e.target.reset();
+                fetchBooks();
+            } catch (err) {
+                validationMsg.textContent = '❌ Erreur lors de la création';
+                validationMsg.classList.remove('hidden');
+            }
+        });
+        
+        // Validation en temps réel pour les pages lues
+        document.getElementById('pagesRead').addEventListener('input', (e) => {
+            const pages = Number(document.getElementById('pages').value) || 0;
+            const pagesRead = Number(e.target.value) || 0;
+            if (pagesRead > pages && pages > 0) {
+                e.target.value = pages;
+            }
+        });
+
+        async function markAsFinished(id) {
+            await fetch(`${API_URL}/books/${id}/finish`, { method: 'PUT' });
+            fetchBooks(); // Recharger pour voir les 100% et le statut "Read"
+        }
+
+        // Gestion de la Modal
+        function openModal(book) {
+            document.getElementById('modal-title').innerText = book.title;
+            document.getElementById('modal-author').innerText = book.author;
+            document.getElementById('modal-status').innerText = book.status;
+            document.getElementById('modal-format').innerText = book.format;
+            document.getElementById('modal-price').innerText = book.price;
+            document.getElementById('modal-suggested').innerText = book.suggestedBy || 'N/A';
+            
+            const delBtn = document.getElementById('modal-delete');
+            delBtn.onclick = async () => {
+                await fetch(`${API_URL}/books/${book._id}`, { method: 'DELETE' });
+                closeModal();
+                fetchBooks();
+            };
+            
+            document.getElementById('book-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('book-modal').classList.add('hidden');
+        }
+
+        // Gestion de la Modal Edit
+        let currentEditingId = null;
+        let maxPages = 0;
+
+        function openEditModal(bookId, totalPages, currentPages) {
+            currentEditingId = bookId;
+            maxPages = totalPages;
+            document.getElementById('edit-pages-read').value = currentPages;
+            document.getElementById('edit-error').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            currentEditingId = null;
+        }
+
+        async function savePages() {
+            const pagesRead = Number(document.getElementById('edit-pages-read').value) || 0;
+            const errorDiv = document.getElementById('edit-error');
+
+            // Validation
+            if (pagesRead > maxPages) {
+                errorDiv.textContent = '❌ Pages lues ne peuvent pas dépasser ' + maxPages;
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/books/${currentEditingId}/currentlyAt`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pagesRead })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Erreur lors de la mise à jour');
+                }
+
+                closeEditModal();
+                fetchBooks();
+            } catch (error) {
+                errorDiv.textContent = '❌ Erreur lors de la mise à jour';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Init
+        fetchBooks();
+    </script>
+</body>
+</html>
