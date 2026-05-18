@@ -12,7 +12,6 @@ export class Book {
         public suggestedBy: string
     ) {}
 
-    // Sauvegarder un nouveau livre
     async save() {
         const payload = {
             title: this.title,
@@ -29,7 +28,6 @@ export class Book {
         return await newBook.save();
     }
 
-    // Mettre à jour la page actuelle (déclenche le pre-save si terminé)
     static async currentlyAt(id: string, page: number) {
         const book = await BookModel.findById(id);
         if (!book) throw new Error('Livre non trouvé');
@@ -37,12 +35,28 @@ export class Book {
         return await book.save();
     }
 
-    // Supprimer un livre
+    static async changeStatus(id: string, status: string) {
+        const book = await BookModel.findById(id);
+        if (!book) throw new Error('Livre non trouvé');
+        book.status = status;
+
+        if (status === 'Read') {
+            book.pagesRead = book.pages;
+            book.finished = true;
+        } else if (status === 'Currently reading' && book.pagesRead === 0) {
+            book.pagesRead = 1;
+            book.finished = false;
+        } else {
+            book.finished = false;
+        }
+
+        return await book.save();
+    }
+
     static async deleteBook(id: string) {
         return await BookModel.findByIdAndDelete(id);
     }
 
-    // Action du Checkbox (Marquer comme lu)
     static async markAsFinished(id: string) {
         const book = await BookModel.findById(id);
         if (!book) throw new Error('Livre non trouvé');

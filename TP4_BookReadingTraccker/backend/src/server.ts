@@ -8,19 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connexion MongoDB (Remplacez par votre URI si nécessaire)
-// Use the same DB name case as the existing database to avoid Mongo case conflicts
 mongoose.connect('mongodb://127.0.0.1:27017/bookTracker')
     .then(() => console.log('MongoDB Connecté'))
     .catch(err => console.error(err));
 
-// Routes
 app.post('/api/books', async (req, res) => {
     try {
         console.log('POST /api/books body:', req.body);
         const { title, author, pages, status, price, pagesRead, format, suggestedBy } = req.body;
         
-        // Validation: pagesRead ne doit pas dépasser pages
         if (pagesRead > pages) {
             return res.status(400).json({ error: 'Pages lues ne peuvent pas dépasser le nombre total de pages' });
         }
@@ -51,6 +47,15 @@ app.put('/api/books/:id/currentlyAt', async (req, res) => {
         const updatedBook = await Book.currentlyAt(req.params.id, req.body.pagesRead);
         res.json(updatedBook);
     } catch (error) { res.status(400).send('Erreur'); }
+});
+
+app.put('/api/books/:id/status', async (req, res) => {
+    try {
+        const updatedBook = await Book.changeStatus(req.params.id, req.body.status);
+        res.json(updatedBook);
+    } catch (error: any) {
+        res.status(400).json({ error: error.message || 'Erreur lors du changement de statut' });
+    }
 });
 
 app.put('/api/books/:id/finish', async (req, res) => {

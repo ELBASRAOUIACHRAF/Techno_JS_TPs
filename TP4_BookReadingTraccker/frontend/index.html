@@ -6,18 +6,21 @@
     <title>Book Tracker Élégant</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-8">
+<body class="bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 text-slate-800 font-sans p-8">
 
     <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-4xl font-bold text-indigo-900 tracking-tight">📚 My Library</h1>
-            <div class="flex gap-6">
-                <div class="bg-white px-6 py-3 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs text-slate-500 uppercase font-semibold">Livres Lus</p>
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+            <div>
+                <h1 class="text-4xl font-bold text-indigo-900 tracking-tight">Ma bibliothèque</h1>
+                <p class="mt-2 text-slate-600">Suivez vos lectures, vos pages et vos statuts avec élégance.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-slate-200 w-full">
+                    <p class="text-xs text-slate-500 uppercase font-semibold">Livres lus</p>
                     <p class="text-2xl font-bold text-indigo-600" id="stat-books-read">0</p>
                 </div>
-                <div class="bg-white px-6 py-3 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs text-slate-500 uppercase font-semibold">Pages Lues</p>
+                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-slate-200 w-full">
+                    <p class="text-xs text-slate-500 uppercase font-semibold">Pages lues</p>
                     <p class="text-2xl font-bold text-indigo-600" id="stat-pages-read">0</p>
                 </div>
             </div>
@@ -70,12 +73,27 @@
             <h2 id="modal-title" class="text-2xl font-bold text-indigo-900 mb-2"></h2>
             <p id="modal-author" class="text-slate-600 mb-6 font-medium"></p>
             <div class="space-y-2 text-sm text-slate-700">
-                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                <div>
+                    <p class="font-semibold">Statut actuel :</p>
+                    <p id="modal-status" class="text-slate-600"></p>
+                </div>
                 <p><strong>Format:</strong> <span id="modal-format"></span></p>
                 <p><strong>Prix:</strong> <span id="modal-price"></span> €</p>
                 <p><strong>Suggéré par:</strong> <span id="modal-suggested"></span></p>
             </div>
-            <button id="modal-delete" class="mt-8 w-full bg-red-100 text-red-600 font-bold py-2 rounded-lg hover:bg-red-200 transition">Supprimer le livre</button>
+            <div class="mt-6">
+                <label for="modal-status-select" class="block text-sm font-semibold text-slate-700 mb-2">Changer le statut</label>
+                <select id="modal-status-select" class="w-full p-3 bg-slate-50 border rounded-lg outline-none">
+                    <option value="Want to read">Want to read</option>
+                    <option value="Currently reading">Currently reading</option>
+                    <option value="Read">Read</option>
+                    <option value="Re-read">Re-read</option>
+                    <option value="DNF">DNF</option>
+                    <option value="Returned Unread">Returned Unread</option>
+                </select>
+            </div>
+            <button id="modal-status-save" class="mt-4 w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition">Enregistrer le statut</button>
+            <button id="modal-delete" class="mt-3 w-full bg-red-100 text-red-600 font-bold py-2 rounded-lg hover:bg-red-200 transition">Supprimer le livre</button>
         </div>
     </div>
 
@@ -119,9 +137,8 @@
                 const isFinished = book.finished ? 'checked disabled' : '';
                 
                 const card = document.createElement('div');
-                card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer flex flex-col justify-between";
+                card.className = "bg-white p-6 rounded-[28px] shadow-lg border border-slate-200 hover:-translate-y-1 hover:shadow-xl transition-transform duration-300 cursor-pointer flex flex-col justify-between";
                 
-                // Si on clique sur la carte (mais pas sur le checkbox), ça ouvre la modal
                 card.onclick = (e) => {
                     if(e.target.tagName !== 'INPUT') openModal(book);
                 };
@@ -129,7 +146,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg text-slate-800 leading-tight">${book.title}</h3>
+                            <h3 class="font-semibold text-lg text-slate-900 leading-tight">${book.title}</h3>
                             <input type="checkbox" class="w-5 h-5 accent-indigo-600 cursor-pointer" 
                                 ${isFinished} 
                                 onchange="markAsFinished('${book._id}')" 
@@ -137,19 +154,19 @@
                         </div>
                         <p class="text-sm text-slate-500 mb-4">${book.author}</p>
                         
-                        <div class="w-full bg-slate-100 rounded-full h-2.5 mb-1 overflow-hidden">
-                            <div class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 mb-3 overflow-hidden">
+                            <div class="bg-gradient-to-r from-indigo-500 to-violet-500 h-2.5 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
                         </div>
                         <div class="flex justify-between text-xs font-semibold text-slate-400">
-                            <span>${book.pagesRead} / ${book.pages} p.</span>
+                            <span>${book.pagesRead} / ${book.pages} pages</span>
                             <span>${percentage}%</span>
                         </div>
                     </div>
-                    <div class="mt-4 flex gap-2 items-center justify-between">
+                    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <span class="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-medium">
                             ${book.status}
                         </span>
-                        <button class="text-indigo-600 text-xs font-semibold hover:text-indigo-700" onclick="openEditModal('${book._id}', ${book.pages}, ${book.pagesRead})" title="Modifier les pages lues">✏️ Modifier</button>
+                        <button class="text-indigo-600 text-sm font-semibold hover:text-indigo-700" onclick="openEditModal('${book._id}', ${book.pages}, ${book.pagesRead})" title="Modifier les pages lues">Modifier</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -163,9 +180,8 @@
             const pages = Number(document.getElementById('pages').value) || 0;
             const pagesRead = Number(document.getElementById('pagesRead').value) || 0;
             
-            // Validation côté frontend
             if (pagesRead > pages) {
-                validationMsg.textContent = '❌ Pages lues ne peuvent pas dépasser le nombre total de pages';
+                validationMsg.textContent = ' Pages lues ne peuvent pas dépasser le nombre total de pages';
                 validationMsg.classList.remove('hidden');
                 return;
             }
@@ -191,14 +207,14 @@
                 });
                 if (!res.ok) {
                     const error = await res.json();
-                    validationMsg.textContent = '❌ ' + error.error;
+                    validationMsg.textContent = ' ' + error.error;
                     validationMsg.classList.remove('hidden');
                     return;
                 }
                 e.target.reset();
                 fetchBooks();
             } catch (err) {
-                validationMsg.textContent = '❌ Erreur lors de la création';
+                validationMsg.textContent = ' Erreur lors de la création';
                 validationMsg.classList.remove('hidden');
             }
         });
@@ -214,17 +230,21 @@
 
         async function markAsFinished(id) {
             await fetch(`${API_URL}/books/${id}/finish`, { method: 'PUT' });
-            fetchBooks(); // Recharger pour voir les 100% et le statut "Read"
+            fetchBooks(); 
         }
+
+        let currentModalBookId = null;
 
         // Gestion de la Modal
         function openModal(book) {
+            currentModalBookId = book._id;
             document.getElementById('modal-title').innerText = book.title;
             document.getElementById('modal-author').innerText = book.author;
             document.getElementById('modal-status').innerText = book.status;
             document.getElementById('modal-format').innerText = book.format;
             document.getElementById('modal-price').innerText = book.price;
             document.getElementById('modal-suggested').innerText = book.suggestedBy || 'N/A';
+            document.getElementById('modal-status-select').value = book.status;
             
             const delBtn = document.getElementById('modal-delete');
             delBtn.onclick = async () => {
@@ -232,15 +252,40 @@
                 closeModal();
                 fetchBooks();
             };
+
+            const saveStatusBtn = document.getElementById('modal-status-save');
+            saveStatusBtn.onclick = async () => {
+                await updateBookStatus();
+            };
             
             document.getElementById('book-modal').classList.remove('hidden');
+        }
+
+        async function updateBookStatus() {
+            const status = document.getElementById('modal-status-select').value;
+            if (!currentModalBookId) return;
+            try {
+                const res = await fetch(`${API_URL}/books/${currentModalBookId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (!res.ok) {
+                    const error = await res.json();
+                    alert('Erreur : ' + (error.error || 'Impossible de changer le statut'));
+                    return;
+                }
+                closeModal();
+                fetchBooks();
+            } catch (error) {
+                alert('Erreur lors du changement de statut');
+            }
         }
 
         function closeModal() {
             document.getElementById('book-modal').classList.add('hidden');
         }
 
-        // Gestion de la Modal Edit
         let currentEditingId = null;
         let maxPages = 0;
 
@@ -261,9 +306,8 @@
             const pagesRead = Number(document.getElementById('edit-pages-read').value) || 0;
             const errorDiv = document.getElementById('edit-error');
 
-            // Validation
             if (pagesRead > maxPages) {
-                errorDiv.textContent = '❌ Pages lues ne peuvent pas dépasser ' + maxPages;
+                errorDiv.textContent = ' Pages lues ne peuvent pas dépasser ' + maxPages;
                 errorDiv.classList.remove('hidden');
                 return;
             }
@@ -282,7 +326,7 @@
                 closeEditModal();
                 fetchBooks();
             } catch (error) {
-                errorDiv.textContent = '❌ Erreur lors de la mise à jour';
+                errorDiv.textContent = ' Erreur lors de la mise à jour';
                 errorDiv.classList.remove('hidden');
             }
         }

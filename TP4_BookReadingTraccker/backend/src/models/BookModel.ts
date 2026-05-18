@@ -24,17 +24,15 @@ const BookSchema: Schema<IBook> = new Schema<IBook>({
     finished: { type: Boolean, default: false }
 });
 
-// Logique automatique : mettre à jour le statut selon les pages lues
 BookSchema.pre('save' as any, async function (this: IBook) {
     if (this.pagesRead >= this.pages) {
         this.finished = true;
         this.status = 'Read';
-    } else if (this.pagesRead > 0 && this.pagesRead < this.pages) {
+    } else if (this.pagesRead > 0 && ['Want to read', 'Currently reading'].includes(this.status)) {
         this.status = 'Currently reading';
         this.finished = false;
     } else if (this.pagesRead === 0) {
         this.finished = false;
-        // Ne pas changer le statut si c'est 0 (peut être 'Want to read', 'Returned Unread', etc)
     }
 });
 
